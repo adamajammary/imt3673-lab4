@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager   viewPager;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
      * Creates the Settings menu in the top toolbar.
      */
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
      * Handles clicks on the Settings menu item.
      */
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(final MenuItem item) {
         int id = item.getItemId();
 
         // TODO: Open the Settings menu

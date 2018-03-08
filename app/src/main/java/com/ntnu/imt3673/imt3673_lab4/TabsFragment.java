@@ -14,6 +14,9 @@ import android.widget.ListView;
  */
 public final class TabsFragment extends Fragment {
 
+    FriendsAdapter  friendsAdapter;
+    MessagesAdapter messagesAdapter;
+
     /**
      * Returns a new instance of this fragment for the specified tab index.
      */
@@ -49,7 +52,9 @@ public final class TabsFragment extends Fragment {
         View     view = inflater.inflate(R.layout.fragment_friends, container, false);
         ListView list = view.findViewById(R.id.lv_friends);
 
-
+        // Set a custom adapter to handle the friends list
+        this.friendsAdapter = new FriendsAdapter(this.getActivity(), R.layout.list_item_friend);
+        list.setAdapter(this.friendsAdapter);
 
         return view;
     }
@@ -63,7 +68,20 @@ public final class TabsFragment extends Fragment {
         ListView list    = view.findViewById(R.id.lv_messages);
         EditText message = view.findViewById(R.id.et_message);
 
+        // Set a custom adapter to handle the messages list
+        this.messagesAdapter = new MessagesAdapter(this.getActivity(), R.layout.list_item_message);
+        list.setAdapter(this.messagesAdapter);
 
+        // Add the message to the list view when the send button is clicked
+        button.setOnClickListener((View v) -> {
+            String msg = message.getText().toString().trim();
+
+            if (!msg.isEmpty()) {
+                messagesAdapter.add(msg);
+                messagesAdapter.notifyDataSetChanged();
+                message.setText("");
+            }
+        });
 
         return view;
     }
