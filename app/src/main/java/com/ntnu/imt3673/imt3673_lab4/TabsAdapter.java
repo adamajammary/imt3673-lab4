@@ -2,15 +2,16 @@ package com.ntnu.imt3673.imt3673_lab4;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 
 /**
- * A custom adapter that manages and returns a specified tab.
+ * Tabs Adapter - A custom adapter that manages and returns a specified tab.
  */
-public class TabsAdapter extends FragmentPagerAdapter {
+public class TabsAdapter extends FragmentStatePagerAdapter {
 
     /**
-     * Tabs Adapter - Creates a new instance using the specified fragment manager.
+     * Tabs Adapter
+     * @param fragmentManager Fragment Manager
      */
     public TabsAdapter(final FragmentManager fragmentManager) {
         super(fragmentManager);
