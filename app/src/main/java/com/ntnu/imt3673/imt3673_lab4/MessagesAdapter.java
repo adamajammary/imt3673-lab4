@@ -36,7 +36,7 @@ public class MessagesAdapter extends ArrayAdapter<String> {
             convertView = this.activity.getLayoutInflater().inflate(this.listItemLayoutId, container, false);
 
         String   row     = this.getItem(position);
-        TextView message = convertView.findViewById(R.id.tv_messageContent);
+        TextView message = convertView.findViewById(R.id.tv_message_content);
 
         if ((row != null) && (message != null))
             message.setText(row);

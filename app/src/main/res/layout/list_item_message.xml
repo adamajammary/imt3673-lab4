@@ -6,10 +6,11 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/tv_messageContent"
+        android:id="@+id/tv_message_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
+        android:textSize="16sp"
     />
 </android.support.constraint.ConstraintLayout>

@@ -9,4 +9,5 @@
     <string name="login_btn_anonymous">Anonymous</string>
     <string name="action_logout">Sign out</string>
     <string name="error_login">ERROR! Failed to authenticate, make sure you are connected to the internet.</string>
+    <string name="error_dbref">ERROR! Failed to get the database reference from Firebase.</string>
 </resources>

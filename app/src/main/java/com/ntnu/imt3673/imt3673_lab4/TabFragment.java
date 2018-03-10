@@ -12,19 +12,19 @@ import android.widget.ListView;
 /**
  * Creates the fragment needed for each tab.
  */
-public final class TabsFragment extends Fragment {
+public final class TabFragment extends Fragment {
 
     /**
      * Returns a new instance of this fragment for the specified tab index.
      */
-    public static TabsFragment newInstance(int tabIndex) {
-        TabsFragment fragment  = new TabsFragment();
-        Bundle       arguments = new Bundle();
+    public static TabFragment newInstance(int tabIndex) {
+        TabFragment tabFragment  = new TabFragment();
+        Bundle      arguments    = new Bundle();
 
         arguments.putInt(Constants.TAB_ARG_INDEX, tabIndex);
-        fragment.setArguments(arguments);
+        tabFragment.setArguments(arguments);
 
-        return fragment;
+        return tabFragment;
     }
 
     /**
@@ -60,22 +60,29 @@ public final class TabsFragment extends Fragment {
      * Sets up and returns the list of messages.
      */
     private View getTabMessages(LayoutInflater inflater, ViewGroup container) {
-        View     view    = inflater.inflate(R.layout.fragment_messages, container, false);
-        Button   button  = view.findViewById(R.id.btn_message);
-        ListView list    = view.findViewById(R.id.lv_messages);
-        EditText message = view.findViewById(R.id.et_message);
+        MainActivity activity = ((MainActivity)getActivity());
+        View         view     = inflater.inflate(R.layout.fragment_messages, container, false);
+        Button       button   = view.findViewById(R.id.btn_message);
+        ListView     list     = view.findViewById(R.id.lv_messages);
+        EditText     message  = view.findViewById(R.id.et_message);
 
         // Set a custom adapter to handle the messages list
         MessagesAdapter messagesAdapter = new MessagesAdapter(this.getActivity(), R.layout.list_item_message);
         list.setAdapter(messagesAdapter);
 
-        // Add the message to the list view when the send button is clicked
+        // Update the messages listener on the database
+        activity.updateMessageListenerDB(messagesAdapter);
+
+        // Add the message to the database when the send button is clicked
         button.setOnClickListener((View v) -> {
             String msg = message.getText().toString().trim();
 
             if (!msg.isEmpty()) {
-                messagesAdapter.add(msg);
-                messagesAdapter.notifyDataSetChanged();
+                String d = String.valueOf(System.currentTimeMillis());
+                String u = "adam";  // TODO: MAX_USER_LENGTH
+                String m = msg;
+
+                activity.addMessageToDB(d, u, m);
                 message.setText("");
             }
         });

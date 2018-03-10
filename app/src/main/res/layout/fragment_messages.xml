@@ -1,12 +1,12 @@
 <android.widget.RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/relativeLayout"
+    android:id="@+id/frag_messages"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:paddingLeft="10dp"
     android:paddingRight="10dp"
-    tools:context="com.ntnu.imt3673.imt3673_lab4.TabsFragment">
+    tools:context="com.ntnu.imt3673.imt3673_lab4.TabFragment">
 
     <ListView
         android:id="@+id/lv_messages"
@@ -20,6 +20,7 @@
         android:id="@+id/et_message"
         android:hint="@string/frag_msg_placeholder"
         android:inputType="textMultiLine"
+        android:maxLength="256"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

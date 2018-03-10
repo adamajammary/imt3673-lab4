@@ -36,7 +36,7 @@ public class FriendsAdapter extends ArrayAdapter<String> {
             convertView = this.activity.getLayoutInflater().inflate(this.listItemLayoutId, container, false);
 
         String   row    = this.getItem(position);
-        TextView friend = convertView.findViewById(R.id.tv_friendName);
+        TextView friend = convertView.findViewById(R.id.tv_friend_name);
 
         if ((row != null) && (friend != null))
             friend.setText(row);

@@ -18,6 +18,7 @@ import com.google.firebase.auth.FirebaseUser;
 public class MainActivity extends AppCompatActivity {
 
     private Authentication authentication;
+    private Database       database;
 
     /**
      * Initializes the authenticator and sends the user to the login screen.
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         this.authentication = new Authentication(this);
+        this.database       = new Database(this);
     }
 
     /**
@@ -92,6 +94,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
         this.updateUI(this.authentication.getUser());
+    }
+
+    /**
+     * Adds the message to the database.
+     */
+    public void addMessageToDB(final String date, final String user, final String message) {
+        this.database.addMessage(date, user, message);
+    }
+
+    /**
+     * Updates the messages listener on the database.
+     */
+    public void updateMessageListenerDB(MessagesAdapter messagesAdapter) {
+        this.database.updateMessageListener(messagesAdapter);
     }
 
     /**

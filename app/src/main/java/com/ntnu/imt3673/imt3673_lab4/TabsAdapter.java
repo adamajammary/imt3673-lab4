@@ -22,7 +22,7 @@ public class TabsAdapter extends FragmentStatePagerAdapter {
      */
     @Override
     public Fragment getItem(final int index) {
-        return TabsFragment.newInstance(index);
+        return TabFragment.newInstance(index);
     }
 
     /**
