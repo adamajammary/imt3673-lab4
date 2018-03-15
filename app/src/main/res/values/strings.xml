@@ -1,13 +1,35 @@
 <resources>
+    <string name="action_logout">Sign out</string>
     <string name="app_name">imt3673-lab4</string>
-    <string name="tab_text_1">Messages</string>
-    <string name="tab_text_2">Friends</string>
     <string name="action_settings">Settings</string>
-    <string name="frag_msg_placeholder">Message</string>
+
     <string name="frag_msg_btn">SEND</string>
+    <string name="frag_msg_placeholder">Message</string>
+
     <string name="login_btn">Sign in</string>
     <string name="login_btn_anonymous">Anonymous</string>
-    <string name="action_logout">Sign out</string>
-    <string name="error_login">ERROR! Failed to authenticate, make sure you are connected to the internet.</string>
+
+    <string name="tab_text_1">Messages</string>
+    <string name="tab_text_2">Friends</string>
+
     <string name="error_dbref">ERROR! Failed to get the database reference from Firebase.</string>
+    <string name="error_login">ERROR! Failed to authenticate, make sure you are connected to the internet.</string>
+
+    <string name="settings_nick_title">Nickname (can only be changed once)</string>
+    <string name="settings_nick_desc">Nickname</string>
+
+    <string name="settings_frequency_title">Fetch frequency</string>
+    <string name="settings_frequency_desc">Fetch frequency</string>
+
+    <string-array name="settings_frequency_array">
+        <item name="settings_frequency_array_1">Every 15 min</item>
+        <item name="settings_frequency_array_2">Every hour</item>
+        <item name="settings_frequency_array_3">Once a day</item>
+    </string-array>
+
+    <string-array name="settings_frequency_array_values">
+        <item name="settings_frequency_array_value_1">15</item>
+        <item name="settings_frequency_array_value_2">60</item>
+        <item name="settings_frequency_array_value_3">1440</item>
+    </string-array>
 </resources>

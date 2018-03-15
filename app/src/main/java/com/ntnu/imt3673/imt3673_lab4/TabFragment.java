@@ -1,10 +1,16 @@
 package com.ntnu.imt3673.imt3673_lab4;
 
+import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -70,6 +76,14 @@ public final class TabFragment extends Fragment {
         MessagesAdapter messagesAdapter = new MessagesAdapter(this.getActivity(), R.layout.list_item_message);
         list.setAdapter(messagesAdapter);
 
+        // Handle clicks/touches on the list view items
+        list.setOnItemClickListener(
+            (AdapterView<?> parent, View v, int pos, long id) -> {
+                hideKeyboard();
+                parent.requestFocus();
+            }
+        );
+
         // Update the messages listener on the database
         activity.updateMessageListenerDB(messagesAdapter);
 
@@ -78,16 +92,27 @@ public final class TabFragment extends Fragment {
             String msg = message.getText().toString().trim();
 
             if (!msg.isEmpty()) {
-                String d = String.valueOf(System.currentTimeMillis());
-                String u = "adam";  // TODO: MAX_USER_LENGTH
-                String m = msg;
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
+                String            nickname    = preferences.getString(Constants.SETTINGS_NICK, "");
+                String            date        = String.valueOf(System.currentTimeMillis());
 
-                activity.addMessageToDB(d, u, m);
+                activity.addMessageToDB(date, nickname, msg);
                 message.setText("");
+                message.clearFocus();
+
+                hideKeyboard();
             }
         });
 
         return view;
+    }
+
+    /**
+     * Hides the software keyboard.
+     */
+    private void hideKeyboard() {
+        InputMethodManager inputMethodManager = (InputMethodManager)this.getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(this.getActivity().getCurrentFocus().getWindowToken(), 0);
     }
 
 }

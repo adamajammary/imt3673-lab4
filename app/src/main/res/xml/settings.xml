@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:key="settings_nickname"
+        android:title="@string/settings_nick_title"
+        android:summary="@string/settings_nick_desc"
+        android:maxLength="35"
+    />
+
+    <ListPreference
+        android:key="settings_frequency"
+        android:title="@string/settings_frequency_title"
+        android:dialogTitle="@string/settings_frequency_title"
+        android:summary="@string/settings_frequency_desc"
+        android:entries="@array/settings_frequency_array"
+        android:entryValues="@array/settings_frequency_array_values"
+        android:defaultValue="15"
+    />
+</PreferenceScreen>

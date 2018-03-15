@@ -1,16 +1,21 @@
 package com.ntnu.imt3673.imt3673_lab4;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.google.firebase.auth.FirebaseUser;
+
+import java.util.UUID;
 
 /**
  * Main Activity
@@ -30,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
 
         this.authentication = new Authentication(this);
         this.database       = new Database(this);
+
+        this.initPreferences();
     }
 
     /**
@@ -42,15 +49,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Handles clicks on the Settings menu item.
+     * Handles clicks on the Options menu in the top right corner.
      */
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         int id = item.getItemId();
 
-        // TODO: Open the Settings menu
+        // Open the Settings menu
         if (id == R.id.action_settings) {
-            //
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivityForResult(intent, Constants.SETTINGS_RETURN);
 
             return true;
         // Log the user out
@@ -63,20 +71,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Starts the authentication intent with Firebase Auth UI, and return with results.
-     */
-    public void onClickLogin(final View view) {
-        this.authentication.login();
-    }
-
-    /**
-     * Sends the user to the main screen if authentication was successful,
-     * otherwise sends the user to the login screen.
+     * Handle results when returning from other activities.
      */
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        this.authentication.authenticate(requestCode, resultCode, data);
+
+        // Applies user preferences when returning from the Settings menu.
+        if ((requestCode == Constants.SETTINGS_RETURN) && (resultCode == RESULT_OK)) {
+            String frequency = data.getStringExtra(Constants.SETTINGS_FREQ);
+            String nickname  = data.getStringExtra(Constants.SETTINGS_NICK);
+
+            //
+        // Sends the user to the main screen if authentication was successful, otherwise to the login screen.
+        } else {
+            this.authentication.authenticate(requestCode, resultCode, data);
+        }
+    }
+
+    /**
+     * Starts the authentication intent with Firebase Auth UI, and return with results.
+     */
+    public void onClickLogin(final View view) {
+        this.authentication.login();
     }
 
     /**
@@ -108,6 +125,26 @@ public class MainActivity extends AppCompatActivity {
      */
     public void updateMessageListenerDB(MessagesAdapter messagesAdapter) {
         this.database.updateMessageListener(messagesAdapter);
+    }
+
+    /**
+     * Initializes the user preferences.
+     */
+    private void initPreferences() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String            nickname    = preferences.getString(Constants.SETTINGS_NICK, "");
+
+        // Set a default random nickname if the user has not changed it
+        if (TextUtils.isEmpty(nickname)) {
+            String                   defaultNick = ("default_" + UUID.randomUUID().toString().substring(0, 8));
+            SharedPreferences.Editor prefsEditor = preferences.edit();
+
+            prefsEditor.putString(Constants.SETTINGS_NICK_CHANGED, Constants.FALSE).apply();
+            prefsEditor.putString(Constants.SETTINGS_NICK, defaultNick).apply();
+        }
+
+        // Save the default preferences if not already set
+        PreferenceManager.setDefaultValues(this, R.xml.settings, false);
     }
 
     /**
