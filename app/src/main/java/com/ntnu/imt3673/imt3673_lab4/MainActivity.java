@@ -35,8 +35,6 @@ public class MainActivity extends AppCompatActivity {
 
         this.authentication = new Authentication(this);
         this.database       = new Database(this);
-
-        this.initPreferences();
     }
 
     /**
@@ -80,9 +78,8 @@ public class MainActivity extends AppCompatActivity {
         // Applies user preferences when returning from the Settings menu.
         if ((requestCode == Constants.SETTINGS_RETURN) && (resultCode == RESULT_OK)) {
             String frequency = data.getStringExtra(Constants.SETTINGS_FREQ);
-            String nickname  = data.getStringExtra(Constants.SETTINGS_NICK);
 
-            //
+            // TODO:
         // Sends the user to the main screen if authentication was successful, otherwise to the login screen.
         } else {
             this.authentication.authenticate(requestCode, resultCode, data);
@@ -121,6 +118,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Adds the user to the database.
+     */
+    public void addUserToDB(final String user, final String uuid) {
+        this.database.addUser(user, uuid);
+    }
+
+    /**
      * Updates the messages listener on the database.
      */
     public void updateMessageListenerDB(MessagesAdapter messagesAdapter) {
@@ -128,29 +132,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Updates the messages listener on the database.
+     */
+    public void updateUserListenerDB(FriendsAdapter friendsAdapter) {
+        this.database.updateUserListener(friendsAdapter);
+    }
+
+    /**
      * Initializes the user preferences.
      */
     private void initPreferences() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String            nickname    = preferences.getString(Constants.SETTINGS_NICK, "");
 
-        // Set a default random nickname if the user has not changed it
+        String nickname    = preferences.getString(Constants.SETTINGS_NICK,         "");
+        String nickChanged = preferences.getString(Constants.SETTINGS_NICK_CHANGED, "");
+
+        // Initialize nick with a default random nickname
         if (TextUtils.isEmpty(nickname)) {
-            String                   defaultNick = ("default_" + UUID.randomUUID().toString().substring(0, 8));
+            String uuid        = UUID.randomUUID().toString();
+            String defaultNick = ("default_" + uuid.substring(0, 8));
+
             SharedPreferences.Editor prefsEditor = preferences.edit();
 
             prefsEditor.putString(Constants.SETTINGS_NICK_CHANGED, Constants.FALSE).apply();
-            prefsEditor.putString(Constants.SETTINGS_NICK, defaultNick).apply();
-        }
+            prefsEditor.putString(Constants.SETTINGS_NICK_UUID,    uuid).apply();
+            prefsEditor.putString(Constants.SETTINGS_NICK,         defaultNick).apply();
 
-        // Save the default preferences if not already set
-        PreferenceManager.setDefaultValues(this, R.xml.settings, false);
+            // Save the default preferences if not already set
+            PreferenceManager.setDefaultValues(this, R.xml.settings, false);
+
+            this.addUserToDB(defaultNick, uuid);
+        // Update the nick with the new name the user chose
+        } else if (nickChanged.equals(Constants.TRUE)) {
+            String uuid = preferences.getString(Constants.SETTINGS_NICK_UUID, "");
+            this.database.updateUser(nickname, uuid);
+        }
     }
 
     /**
      * Shows the main UI with the two tabs for messages and friends.
      */
     private void initUI() {
+        this.initPreferences();
+
         // Set the top toolbar (contains the back button and settings etc.)
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

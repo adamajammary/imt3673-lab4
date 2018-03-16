@@ -13,7 +13,7 @@ import static android.app.Activity.RESULT_OK;
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -21,18 +21,21 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+    public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key) {
         Intent intent = new Intent();
         String value  = sharedPreferences.getString(key, "");
 
         intent.putExtra(key, value);
-        getActivity().setResult(RESULT_OK, intent);
 
         // Disable the nickname preference once the user has changed their nick
         if (key.equals(Constants.SETTINGS_NICK)) {
-            SharedPreferences.Editor prefsEditor = getPreferenceScreen().getSharedPreferences().edit();
+            SharedPreferences prefs = getPreferenceScreen().getSharedPreferences();
+
+            SharedPreferences.Editor prefsEditor = prefs.edit();
             prefsEditor.putString(Constants.SETTINGS_NICK_CHANGED, Constants.TRUE).apply();
         }
+
+        getActivity().setResult(RESULT_OK, intent);
 
         this.updateUI();
     }
@@ -40,10 +43,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     @Override
     public void onResume() {
         super.onResume();
-
-        SharedPreferences preferences = getPreferenceScreen().getSharedPreferences();
-        preferences.registerOnSharedPreferenceChangeListener(this);
-
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         this.updateUI();
     }
 

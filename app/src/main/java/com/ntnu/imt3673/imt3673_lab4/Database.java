@@ -1,7 +1,9 @@
 package com.ntnu.imt3673.imt3673_lab4;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.google.firebase.database.ChildEventListener;
@@ -21,8 +23,10 @@ import java.util.Map;
 public class Database {
 
     private MainActivity       activity;
-    private ChildEventListener childEventListener;
+    private ChildEventListener messagesEventListener;
+    private ChildEventListener usersEventListener;
     private DatabaseReference  dbMessagesRef;
+    private DatabaseReference  dbUsersRef;
 
     /**
      * Database - Sets up a reference to the Firebase database.
@@ -33,10 +37,12 @@ public class Database {
 
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
 
-        if (dbRef != null)
-            this.dbMessagesRef = dbRef.child("messages");
+        if (dbRef != null) {
+            this.dbMessagesRef = dbRef.child(Constants.DB_MESSAGES);
+            this.dbUsersRef    = dbRef.child(Constants.DB_USERS);
+        }
 
-        if (this.dbMessagesRef == null) {
+        if ((this.dbMessagesRef == null) || (this.dbUsersRef == null)) {
             Toast.makeText(this.activity, R.string.error_dbref, Toast.LENGTH_LONG).show();
             Log.e("LAB4", activity.getString(R.string.error_dbref));
         }
@@ -63,44 +69,103 @@ public class Database {
     }
 
     /**
-     * Register a listener to notify us when data is updated on the Firebase server.
+     * Adds the user to the list of users in the database.
+     */
+    public void addUser(final String user, final String uuid) {
+        if (this.dbUsersRef == null)
+            return;
+
+        Map<String, String> userMap = new HashMap<>();
+        userMap.put("nickname", user);
+
+        Map<String, Object> childUser = new HashMap<>();
+        childUser.put(("/" + uuid), userMap);
+
+        this.dbUsersRef.updateChildren(childUser);
+    }
+
+    /**
+     * Updates the user with the new nickname in the database.
+     */
+    public void updateUser(final String user, final String uuid) {
+        Map<String, String> userMap = new HashMap<>();
+        userMap.put("nickname", user);
+
+        this.dbUsersRef.child(uuid).setValue(userMap);
+    }
+
+    /**
+     * Register a listener to notify us when a new message has been added to the Firebase server.
      */
     public void updateMessageListener(MessagesAdapter messagesAdapter) {
-        if (this.childEventListener != null)
-            this.dbMessagesRef.removeEventListener(this.childEventListener);
+        if (this.messagesEventListener != null)
+            this.dbMessagesRef.removeEventListener(this.messagesEventListener);
 
         messagesAdapter.clear();
+        this.messagesEventListener = new FirebaseListener(messagesAdapter);
+        this.dbMessagesRef.orderByChild("d").addChildEventListener(this.messagesEventListener);
+    }
 
-        this.childEventListener = new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
-                Map    value   = (Map<String, String>)dataSnapshot.getValue(Object.class);
-                Date   date    = new Date(Long.parseLong((String)value.get("d")));
+    /**
+     * Register a listener to notify us when a new user has been added to the Firebase server.
+     */
+    public void updateUserListener(FriendsAdapter friendsAdapter) {
+        if (this.usersEventListener != null)
+            this.dbUsersRef.removeEventListener(this.usersEventListener);
+
+        friendsAdapter.clear();
+        this.usersEventListener = new FirebaseListener(friendsAdapter);
+        this.dbUsersRef.orderByChild("nickname").addChildEventListener(this.usersEventListener);
+    }
+
+    /**
+     * A listener which notifies us when a data has changed in the Firebase server.
+     */
+    private class FirebaseListener implements ChildEventListener {
+
+        ArrayAdapter<String> adapter;
+
+        public FirebaseListener(ArrayAdapter<String> adapter) {
+            this.adapter = adapter;
+        }
+
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
+            String listEntry = "";
+            Map    dbValue   = (Map<String, String>)dataSnapshot.getValue(Object.class);
+            String dbName    = dataSnapshot.getRef().getParent().getKey();
+
+            // Messages (chat)
+            if (dbName.equals(Constants.DB_MESSAGES)) {
+                Date   date    = new Date(Long.parseLong((String)dbValue.get("d")));
                 String date2   = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(date);
-                String message = (value.get("u") + "\t\t(" + date2 + ")\n\t" + value.get("m"));
 
-                messagesAdapter.add(message);
-                messagesAdapter.notifyDataSetChanged();
+                listEntry = (dbValue.get("u") + "\t\t(" + date2 + ")\n\t" + dbValue.get("m"));
+            // Users (friends)
+            } else if (dbName.equals(Constants.DB_USERS)) {
+                listEntry = dbValue.get("nickname").toString();
             }
 
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            if (!TextUtils.isEmpty(listEntry)) {
+                this.adapter.add(listEntry);
+                this.adapter.notifyDataSetChanged();
             }
+        }
 
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-            }
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
 
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-            }
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {}
 
-            @Override
-            public void onCancelled(DatabaseError error) {
-            }
-        };
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
 
-        this.dbMessagesRef.addChildEventListener(this.childEventListener);
+        @Override
+        public void onCancelled(DatabaseError error) {
+            Log.w("LAB4", error.toException());
+        }
+
     }
 
 }

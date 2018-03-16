@@ -52,12 +52,23 @@ public final class TabFragment extends Fragment {
      * Sets up and returns the list of friends (users).
      */
     private View getTabFriends(LayoutInflater inflater, ViewGroup container) {
-        View     view = inflater.inflate(R.layout.fragment_friends, container, false);
-        ListView list = view.findViewById(R.id.lv_friends);
+        MainActivity activity = ((MainActivity)getActivity());
+        View         view     = inflater.inflate(R.layout.fragment_friends, container, false);
+        ListView     list     = view.findViewById(R.id.lv_friends);
 
         // Set a custom adapter to handle the friends list
         FriendsAdapter friendsAdapter = new FriendsAdapter(this.getActivity(), R.layout.list_item_friend);
         list.setAdapter(friendsAdapter);
+
+        // Update the users listener on the database
+        activity.updateUserListenerDB(friendsAdapter);
+
+        // Handle clicks/touches on the list view items
+        list.setOnItemClickListener(
+            (AdapterView<?> parent, View v, int pos, long id) -> {
+                // TODO: Pressing on a given nickname, should provide a list view with all messages FROM that user only, in chronological order.
+            }
+        );
 
         return view;
     }
@@ -76,6 +87,9 @@ public final class TabFragment extends Fragment {
         MessagesAdapter messagesAdapter = new MessagesAdapter(this.getActivity(), R.layout.list_item_message);
         list.setAdapter(messagesAdapter);
 
+        // Update the messages listener on the database
+        activity.updateMessageListenerDB(messagesAdapter);
+
         // Handle clicks/touches on the list view items
         list.setOnItemClickListener(
             (AdapterView<?> parent, View v, int pos, long id) -> {
@@ -83,9 +97,6 @@ public final class TabFragment extends Fragment {
                 parent.requestFocus();
             }
         );
-
-        // Update the messages listener on the database
-        activity.updateMessageListenerDB(messagesAdapter);
 
         // Add the message to the database when the send button is clicked
         button.setOnClickListener((View v) -> {
