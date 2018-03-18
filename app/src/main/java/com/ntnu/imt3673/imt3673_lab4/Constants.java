@@ -5,8 +5,13 @@ package com.ntnu.imt3673.imt3673_lab4;
  */
 public final class Constants {
 
+    public static final int    MINUTES_IN_HOUR       = 60;
+    public static final int    MS_IN_SECOND          = 1000;
     public static final int    LOGIN_INTENT          = 1000;
     public static final int    SETTINGS_RETURN       = 2000;
+    public static final int    BACKGROUND_FETCH_ID   = 3000;
+    public static final String CHANNEL_ID            = "channel_id";
+    public static final String FETCH_LAST_MSG        = "fetch_last_msg";
     public static final String DB_MESSAGES           = "messages";
     public static final String DB_USERS              = "users";
     public static final String SETTINGS_FREQ         = "settings_frequency";

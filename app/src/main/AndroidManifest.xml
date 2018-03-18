@@ -27,5 +27,12 @@
         </activity>
 
         <activity android:name=".SettingsActivity" android:parentActivityName=".MainActivity" />
+
+        <service
+            android:name=".BackgroundDataFetchService"
+            android:exported="false"
+            android:enabled="true"
+            android:permission="android.permission.BIND_JOB_SERVICE">
+        </service>
     </application>
 </manifest>

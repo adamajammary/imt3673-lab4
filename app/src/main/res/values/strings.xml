@@ -11,6 +11,10 @@
     <string name="login_btn">Sign in</string>
     <string name="login_btn_anonymous">Anonymous</string>
 
+    <string name="notification_title">New Message</string>
+    <string name="notification_channel_name">Messages</string>
+    <string name="notification_channel_desc">Notifies about new messages</string>
+
     <string name="tab_text_1">Messages</string>
     <string name="tab_text_2">Friends</string>
 

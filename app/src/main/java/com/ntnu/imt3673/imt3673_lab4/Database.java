@@ -159,8 +159,12 @@ public class Database {
                 Date   date    = new Date(Long.parseLong((String)dbValue.get("d")));
                 String date2   = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(date);
 
-                listEntry = (dbValue.get("u") + "\t\t(" + date2 + ")\n\t" + dbValue.get("m"));
+                listEntry = (dbValue.get("u") + "\t(" + date2 + ")\n" + dbValue.get("m"));
+
+                activity.updateLastMessageFetched(previousChildName);
+
             // Users (friends)
+            // TODO: The Friends List tab lists nicknames ONCE only (no duplications).
             } else if (dbName.equals(Constants.DB_USERS)) {
                 listEntry = dbValue.get("nickname").toString();
             }
@@ -169,24 +173,16 @@ public class Database {
                 this.adapter.add(listEntry);
                 this.adapter.notifyDataSetChanged();
             }
-
-            // TODO: When a new message is available, the Notification should be used, to communicate that to the user. The user can start the foreground activity from the Notification.
-
         }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {}
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
 
         @Override
         public void onCancelled(DatabaseError error) {
             Log.w("LAB4", error.toException());
         }
+
+        @Override public void onChildChanged(DataSnapshot dataSnapshot, String p) {}
+        @Override public void onChildMoved(DataSnapshot   dataSnapshot, String p) {}
+        @Override public void onChildRemoved(DataSnapshot dataSnapshot) {}
 
     }
 

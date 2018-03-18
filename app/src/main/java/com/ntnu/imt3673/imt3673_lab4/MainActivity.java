@@ -1,14 +1,19 @@
 package com.ntnu.imt3673.imt3673_lab4;
 
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Authentication authentication;
     private Database       database;
+    private int            fetchDataFrequency;
+    private String         lastMessageFetched;
 
     /**
      * Initializes the authenticator and sends the user to the login screen.
@@ -81,10 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Applies user preferences when returning from the Settings menu.
         if ((requestCode == Constants.SETTINGS_RETURN) && (resultCode == RESULT_OK)) {
-            String frequency = data.getStringExtra(Constants.SETTINGS_FREQ);
-
-            // TODO: When the app is not in the foreground, the background service should periodically check for new messages.
-
+            this.fetchDataFrequency = Integer.parseInt(data.getStringExtra(Constants.SETTINGS_FREQ));
         // Sends the user to the main screen if authentication was successful, otherwise to the login screen.
         } else {
             this.authentication.authenticate(requestCode, resultCode, data);
@@ -113,6 +117,32 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
         this.updateUI(this.authentication.getUser());
+
+        try {
+            getSystemService(JobScheduler.class).cancel(Constants.BACKGROUND_FETCH_ID);
+        } catch (NullPointerException e) {
+            Log.w("LAB4", e);
+        }
+    }
+
+    /**
+     * Schedules a service to periodically check for new messages and notifies the user.
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        JobInfo.Builder builder = new JobInfo.Builder(
+            Constants.BACKGROUND_FETCH_ID, new ComponentName(this, BackgroundDataFetchService.class)
+        );
+
+        PersistableBundle bundle = new PersistableBundle();
+        bundle.putString(Constants.FETCH_LAST_MSG, this.lastMessageFetched);
+
+        builder.setExtras(bundle);
+        builder.setPeriodic(this.fetchDataFrequency * Constants.MINUTES_IN_HOUR * Constants.MS_IN_SECOND);
+
+        getSystemService(JobScheduler.class).schedule(builder.build());
     }
 
     /**
@@ -179,6 +209,8 @@ public class MainActivity extends AppCompatActivity {
             String uuid = preferences.getString(Constants.SETTINGS_NICK_UUID, "");
             this.database.updateUser(nickname, uuid);
         }
+
+        this.fetchDataFrequency = Integer.parseInt(preferences.getString(Constants.SETTINGS_FREQ, ""));
     }
 
     /**
@@ -217,6 +249,13 @@ public class MainActivity extends AppCompatActivity {
             setContentView(R.layout.activity_main);
             this.initUI();
         }
+    }
+
+    /**
+     * Updates the key ID of the last message that was fetched from the Firebase database.
+     */
+    public void updateLastMessageFetched(String messageKeyId) {
+        this.lastMessageFetched = messageKeyId;
     }
 
 }
