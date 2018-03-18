@@ -1,6 +1,8 @@
 <resources>
-    <string name="action_logout">Sign out</string>
     <string name="app_name">imt3673-lab4</string>
+
+    <string name="action_logout">Sign out</string>
+    <string name="action_messages">View all messages</string>
     <string name="action_settings">Settings</string>
 
     <string name="frag_msg_btn">SEND</string>
@@ -15,11 +17,11 @@
     <string name="error_dbref">ERROR! Failed to get the database reference from Firebase.</string>
     <string name="error_login">ERROR! Failed to authenticate, make sure you are connected to the internet.</string>
 
-    <string name="settings_nick_title">Nickname (can only be changed once)</string>
     <string name="settings_nick_desc">Nickname</string>
+    <string name="settings_nick_title">Nickname (can only be changed once)</string>
 
-    <string name="settings_frequency_title">Fetch frequency</string>
     <string name="settings_frequency_desc">Fetch frequency</string>
+    <string name="settings_frequency_title">Fetch frequency</string>
 
     <string-array name="settings_frequency_array">
         <item name="settings_frequency_array_1">Every 15 min</item>

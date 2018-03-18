@@ -1,11 +1,15 @@
 package com.ntnu.imt3673.imt3673_lab4;
 
 import android.app.Activity;
+import android.app.TabActivity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TabHost;
 
 /**
  * Creates the fragment needed for each tab.
@@ -24,8 +29,8 @@ public final class TabFragment extends Fragment {
      * Returns a new instance of this fragment for the specified tab index.
      */
     public static TabFragment newInstance(int tabIndex) {
-        TabFragment tabFragment  = new TabFragment();
-        Bundle      arguments    = new Bundle();
+        TabFragment tabFragment = new TabFragment();
+        Bundle      arguments   = new Bundle();
 
         arguments.putInt(Constants.TAB_ARG_INDEX, tabIndex);
         tabFragment.setArguments(arguments);
@@ -63,10 +68,15 @@ public final class TabFragment extends Fragment {
         // Update the users listener on the database
         activity.updateUserListenerDB(friendsAdapter);
 
-        // Handle clicks/touches on the list view items
+        // Clicking on a user will only show messages from that user
         list.setOnItemClickListener(
             (AdapterView<?> parent, View v, int pos, long id) -> {
-                // TODO: Pressing on a given nickname, should provide a list view with all messages FROM that user only, in chronological order.
+                // Show only messages from the selected user
+                activity.updateMessageListenerDB("u", friendsAdapter.getItem(pos));
+
+                // Switch over to the messages tab
+                ViewPager viewPager = getActivity().findViewById(R.id.container);
+                viewPager.setCurrentItem(0);
             }
         );
 

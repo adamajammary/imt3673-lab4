@@ -63,6 +63,10 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.action_logout) {
             this.authentication.logout();
             return true;
+        // View all messages from everyone
+        } else if (id == R.id.action_messages) {
+            this.updateMessageListenerDB("d", "");
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -79,7 +83,8 @@ public class MainActivity extends AppCompatActivity {
         if ((requestCode == Constants.SETTINGS_RETURN) && (resultCode == RESULT_OK)) {
             String frequency = data.getStringExtra(Constants.SETTINGS_FREQ);
 
-            // TODO:
+            // TODO: When the app is not in the foreground, the background service should periodically check for new messages.
+
         // Sends the user to the main screen if authentication was successful, otherwise to the login screen.
         } else {
             this.authentication.authenticate(requestCode, resultCode, data);
@@ -122,6 +127,13 @@ public class MainActivity extends AppCompatActivity {
      */
     public void addUserToDB(final String user, final String uuid) {
         this.database.addUser(user, uuid);
+    }
+
+    /**
+     * Updates the message listener with the specified query/search criteria.
+     */
+    public void updateMessageListenerDB(String orderBy, String equalTo) {
+        this.database.updateMessageListener(orderBy, equalTo);
     }
 
     /**

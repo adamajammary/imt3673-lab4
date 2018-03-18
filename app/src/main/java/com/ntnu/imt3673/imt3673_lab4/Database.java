@@ -23,6 +23,7 @@ import java.util.Map;
 public class Database {
 
     private MainActivity       activity;
+    private MessagesAdapter    messagesAdapter;
     private ChildEventListener messagesEventListener;
     private ChildEventListener usersEventListener;
     private DatabaseReference  dbMessagesRef;
@@ -95,14 +96,31 @@ public class Database {
     }
 
     /**
+     * Updates the message listener with the specified query/search criteria.
+     */
+    public void updateMessageListener(String orderBy, String equalTo) {
+        if (this.messagesEventListener != null)
+            this.dbMessagesRef.removeEventListener(this.messagesEventListener);
+
+        this.messagesAdapter.clear();
+
+        if (!TextUtils.isEmpty(equalTo))
+            this.dbMessagesRef.orderByChild(orderBy).equalTo(equalTo).addChildEventListener(this.messagesEventListener);
+        else
+            this.dbMessagesRef.orderByChild(orderBy).addChildEventListener(this.messagesEventListener);
+    }
+
+    /**
      * Register a listener to notify us when a new message has been added to the Firebase server.
      */
     public void updateMessageListener(MessagesAdapter messagesAdapter) {
         if (this.messagesEventListener != null)
             this.dbMessagesRef.removeEventListener(this.messagesEventListener);
 
-        messagesAdapter.clear();
-        this.messagesEventListener = new FirebaseListener(messagesAdapter);
+        this.messagesAdapter = messagesAdapter;
+        this.messagesAdapter.clear();
+
+        this.messagesEventListener = new FirebaseListener(this.messagesAdapter);
         this.dbMessagesRef.orderByChild("d").addChildEventListener(this.messagesEventListener);
     }
 
@@ -114,6 +132,7 @@ public class Database {
             this.dbUsersRef.removeEventListener(this.usersEventListener);
 
         friendsAdapter.clear();
+
         this.usersEventListener = new FirebaseListener(friendsAdapter);
         this.dbUsersRef.orderByChild("nickname").addChildEventListener(this.usersEventListener);
     }
@@ -150,6 +169,9 @@ public class Database {
                 this.adapter.add(listEntry);
                 this.adapter.notifyDataSetChanged();
             }
+
+            // TODO: When a new message is available, the Notification should be used, to communicate that to the user. The user can start the foreground activity from the Notification.
+
         }
 
         @Override
