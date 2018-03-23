@@ -20,6 +20,7 @@ import android.view.View;
 
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 /**
@@ -72,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
             return true;
         // View all messages from everyone
         } else if (id == R.id.action_messages) {
-            this.updateMessageListenerDB("d", "");
+            this.updateMessageListenerDB("d", new ArrayList<>());
             return true;
         }
 
@@ -121,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             getSystemService(JobScheduler.class).cancel(Constants.BACKGROUND_FETCH_ID);
         } catch (NullPointerException e) {
-            Log.w("LAB4", e);
+            Log.w(Constants.LOG_TAG, e);
         }
     }
 
@@ -162,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Updates the message listener with the specified query/search criteria.
      */
-    public void updateMessageListenerDB(String orderBy, String equalTo) {
+    public void updateMessageListenerDB(String orderBy, ArrayList<String> equalTo) {
         this.database.updateMessageListener(orderBy, equalTo);
     }
 
@@ -198,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
 
             prefsEditor.putString(Constants.SETTINGS_NICK_CHANGED, Constants.FALSE).apply();
             prefsEditor.putString(Constants.SETTINGS_NICK_UUID,    uuid).apply();
+            prefsEditor.putString(Constants.SETTINGS_NICK_DEFAULT, defaultNick).apply();
             prefsEditor.putString(Constants.SETTINGS_NICK,         defaultNick).apply();
 
             // Save the default preferences if not already set

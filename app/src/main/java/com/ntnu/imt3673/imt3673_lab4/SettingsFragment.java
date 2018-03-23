@@ -7,6 +7,16 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.widget.Toast;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.Map;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -22,21 +32,63 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
 
     @Override
     public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key) {
-        Intent intent = new Intent();
         String value  = sharedPreferences.getString(key, "");
+        Intent intent = new Intent();
 
-        intent.putExtra(key, value);
-
-        // Disable the nickname preference once the user has changed their nick
+        // Handle nickname changes - check for duplicates before accepting the change
         if (key.equals(Constants.SETTINGS_NICK)) {
-            SharedPreferences prefs = getPreferenceScreen().getSharedPreferences();
+            ValueEventListener listener = new ValueEventListener() {
+                @Override
+                @SuppressWarnings("unchecked")
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Map                      dbValues    = (Map<String, Object>)dataSnapshot.getValue(Object.class);
+                    SharedPreferences        prefs       = getPreferenceScreen().getSharedPreferences();
+                    SharedPreferences.Editor prefsEditor = prefs.edit();
 
-            SharedPreferences.Editor prefsEditor = prefs.edit();
-            prefsEditor.putString(Constants.SETTINGS_NICK_CHANGED, Constants.TRUE).apply();
+                    // Disable the nickname preference if the nick is available
+                    if ((dbValues == null) || dbValues.isEmpty()) {
+                        prefsEditor.putString(Constants.SETTINGS_NICK_CHANGED, Constants.TRUE).apply();
+
+                        // Return intent results for the new valid nick
+                        intent.putExtra(key, value);
+                        getActivity().setResult(RESULT_OK, intent);
+                    // Otherwise reset the nick back to the default value
+                    } else {
+                        String defaultNick = prefs.getString(Constants.SETTINGS_NICK_DEFAULT, "");
+                        prefsEditor.putString(Constants.SETTINGS_NICK, defaultNick).apply();
+
+                        EditTextPreference nickPref = (EditTextPreference)findPreference(Constants.SETTINGS_NICK);
+                        nickPref.setText(defaultNick);
+
+                        // Refresh the UI to reflect the changes
+                        updateUI();
+
+                        Toast.makeText(getContext(), R.string.error_nick, Toast.LENGTH_LONG).show();
+                        Log.w(Constants.LOG_TAG, getString(R.string.error_nick));
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.w(Constants.LOG_TAG, databaseError.toException());
+                }
+            };
+
+            // Check if the nickname already exists in the database
+            Query dbQuery = FirebaseDatabase.getInstance().getReference()
+                .child(Constants.DB_USERS)
+                .orderByChild(Constants.DB_USERS_NICK)
+                .equalTo(value);
+
+            dbQuery.addListenerForSingleValueEvent(listener);
+            dbQuery.removeEventListener(listener);
+        // Return intent results for all other preferences than nick
+        } else {
+            intent.putExtra(key, value);
+            getActivity().setResult(RESULT_OK, intent);
         }
 
-        getActivity().setResult(RESULT_OK, intent);
-
+        // Refresh the UI to reflect the changes
         this.updateUI();
     }
 
@@ -75,5 +127,4 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         freqPref.setSummary(getString(R.string.settings_frequency_desc) + ": " + freqValue);
         nickPref.setSummary(getString(R.string.settings_nick_desc)      + ": " + nickValue);
     }
-
 }

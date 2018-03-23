@@ -10,7 +10,6 @@
 
     <ListView
         android:id="@+id/lv_messages"
-        android:focusedByDefault="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/et_message"
@@ -19,7 +18,6 @@
 
     <EditText
         android:id="@+id/et_message"
-        android:focusedByDefault="false"
         android:hint="@string/frag_msg_placeholder"
         android:inputType="textMultiLine"
         android:maxLength="256"

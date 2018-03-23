@@ -20,6 +20,7 @@
 
     <string name="error_dbref">ERROR! Failed to get the database reference from Firebase.</string>
     <string name="error_login">ERROR! Failed to authenticate, make sure you are connected to the internet.</string>
+    <string name="error_nick">Sorry, that nickname is already taken.</string>
 
     <string name="settings_nick_desc">Nickname</string>
     <string name="settings_nick_title">Nickname (can only be changed once)</string>

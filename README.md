@@ -1,11 +1,21 @@
-####################################################
-# http://prod3.imt.hig.no/adamjammary/imt3673-lab4 #
-# Author: Adam A. Jammary                          #
-# Course: IMT3673 Lab 4                            #
-####################################################
+Author:	Adam A. Jammary
+Course:	IMT3673
+Lab:	4. Chat application
+GitLab:	http://prod3.imt.hig.no/adamjammary/imt3673-lab4
 
-Lab 4: Chat application
------------------------
+Notes
+-----
+
+- The user can login anonymously or with an existing Google account
+- The nickname can be changed from the Settings menu (in the top-right corner) after logging in
+- The login process and fetching initial data may be slow when testing on an emulator
+
+Linter warnings
+---------------
+- GradleDependency:			Latest version 12.0.0 of Google Play Services is not available on all emulators
+- UnusedResources:			Auto-generated file during build by Google Services
+- GoogleAppIndexingWarning: App will not be commercially released, so no need to be indexable by Google Search
+- UncheckedCast:			Firebase returns an Object from the DataSnaphots that I cast to a Map
 
 The idea
 --------

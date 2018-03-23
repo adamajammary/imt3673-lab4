@@ -20,6 +20,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -56,7 +57,7 @@ public class BackgroundDataFetchService extends JobService {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.w("LAB4", databaseError.toException());
+                Log.w(Constants.LOG_TAG, databaseError.toException());
             }
 
             @Override public void onChildChanged(DataSnapshot dataSnapshot, String p) {}
@@ -80,12 +81,13 @@ public class BackgroundDataFetchService extends JobService {
     /**
      * Notifies the user about new messages.
      */
+    @SuppressWarnings("unchecked")
     private void notifyUser(DataSnapshot dataSnapshot) {
         Map    dbValue  = (Map<String, String>)dataSnapshot.getValue(Object.class);
-        Date   date     = new Date(Long.parseLong((String)dbValue.get("d")));
-        String date2    = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(date);
-        String msgShort = (dbValue.get("u") + "\t(" + date2 + ")");
-        String msgLong  = (msgShort + "\n" + dbValue.get("m"));
+        Date   date     = new Date(Long.parseLong((String)dbValue.get(Constants.DB_MESSAGES_D)));
+        String date2    = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.US).format(date);
+        String msgShort = (date2 + "\t(" + dbValue.get(Constants.DB_MESSAGES_U) + ")");
+        String msgLong  = (msgShort + "\n" + dbValue.get(Constants.DB_MESSAGES_M));
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

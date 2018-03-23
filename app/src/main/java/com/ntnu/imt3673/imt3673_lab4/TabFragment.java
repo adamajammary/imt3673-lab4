@@ -1,14 +1,12 @@
 package com.ntnu.imt3673.imt3673_lab4;
 
 import android.app.Activity;
-import android.app.TabActivity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +16,8 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TabHost;
+
+import java.util.ArrayList;
 
 /**
  * Creates the fragment needed for each tab.
@@ -68,11 +67,21 @@ public final class TabFragment extends Fragment {
         // Update the users listener on the database
         activity.updateUserListenerDB(friendsAdapter);
 
-        // Clicking on a user will only show messages from that user
+        // Clicking on a user will only show messages from that user and us
         list.setOnItemClickListener(
             (AdapterView<?> parent, View v, int pos, long id) -> {
-                // Show only messages from the selected user
-                activity.updateMessageListenerDB("u", friendsAdapter.getItem(pos));
+                SharedPreferences prefs    = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                String            nickname = prefs.getString(Constants.SETTINGS_NICK, "");
+                String            user     = friendsAdapter.getItem(pos);
+                ArrayList<String> equalTo  = new ArrayList<>();
+
+                // Show only messages from the selected user and us
+                equalTo.add(user);
+
+                if (!nickname.equals(user))
+                    equalTo.add(nickname);
+
+                activity.updateMessageListenerDB(Constants.DB_MESSAGES_U, equalTo);
 
                 // Switch over to the messages tab
                 ViewPager viewPager = getActivity().findViewById(R.id.container);
@@ -94,7 +103,7 @@ public final class TabFragment extends Fragment {
         EditText     message  = view.findViewById(R.id.et_message);
 
         // Set a custom adapter to handle the messages list
-        MessagesAdapter messagesAdapter = new MessagesAdapter(this.getActivity(), R.layout.list_item_message);
+        MessagesAdapter messagesAdapter = new MessagesAdapter(getActivity(), R.layout.list_item_message);
         list.setAdapter(messagesAdapter);
 
         // Update the messages listener on the database
@@ -113,9 +122,9 @@ public final class TabFragment extends Fragment {
             String msg = message.getText().toString().trim();
 
             if (!msg.isEmpty()) {
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
-                String            nickname    = preferences.getString(Constants.SETTINGS_NICK, "");
-                String            date        = String.valueOf(System.currentTimeMillis());
+                SharedPreferences prefs    = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                String            nickname = prefs.getString(Constants.SETTINGS_NICK, "");
+                String            date     = String.valueOf(System.currentTimeMillis());
 
                 activity.addMessageToDB(date, nickname, msg);
                 message.setText("");
@@ -132,8 +141,14 @@ public final class TabFragment extends Fragment {
      * Hides the software keyboard.
      */
     private void hideKeyboard() {
-        InputMethodManager inputMethodManager = (InputMethodManager)this.getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(this.getActivity().getCurrentFocus().getWindowToken(), 0);
+        try {
+            InputMethodManager inputMethodManager = (InputMethodManager)this.getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+            IBinder            windowToken        = this.getActivity().getCurrentFocus().getWindowToken();
+
+            inputMethodManager.hideSoftInputFromWindow(windowToken, 0);
+        } catch (NullPointerException e) {
+            Log.w(Constants.LOG_TAG, e);
+        }
     }
 
 }

@@ -13,9 +13,15 @@ public final class Constants {
     public static final String CHANNEL_ID            = "channel_id";
     public static final String FETCH_LAST_MSG        = "fetch_last_msg";
     public static final String DB_MESSAGES           = "messages";
+    public static final String DB_MESSAGES_D         = "d";
+    public static final String DB_MESSAGES_M         = "m";
+    public static final String DB_MESSAGES_U         = "u";
     public static final String DB_USERS              = "users";
+    public static final String DB_USERS_NICK         = "nickname";
+    public static final String LOG_TAG               = "LAB4";
     public static final String SETTINGS_FREQ         = "settings_frequency";
     public static final String SETTINGS_NICK         = "settings_nickname";
+    public static final String SETTINGS_NICK_DEFAULT = "settings_nick_default";
     public static final String SETTINGS_NICK_CHANGED = "settings_nick_changed";
     public static final String SETTINGS_NICK_UUID    = "settings_nick_uuid";
     public static final String TAB_ARG_INDEX         = "tab_index";
