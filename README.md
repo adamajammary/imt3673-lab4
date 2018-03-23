@@ -1,4 +1,4 @@
-# imt3673-lab2
+# imt3673-lab4
 IMT3673 Lab 4 - Chat application (Android, Java)
 
 ## Notes
