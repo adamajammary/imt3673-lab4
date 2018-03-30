@@ -13,7 +13,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -61,20 +60,20 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         int id = item.getItemId();
 
-        // Open the Settings menu
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivityForResult(intent, Constants.SETTINGS_RETURN);
-
-            return true;
-        // Log the user out
-        } else if (id == R.id.action_logout) {
-            this.authentication.logout();
-            return true;
-        // View all messages from everyone
-        } else if (id == R.id.action_messages) {
-            this.updateMessageListenerDB("d", new ArrayList<>());
-            return true;
+        switch (id) {
+            // Open the Settings menu
+            case R.id.action_settings:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivityForResult(intent, Constants.SETTINGS_RETURN);
+                return true;
+            // Log the user out
+            case R.id.action_logout:
+                this.authentication.logout();
+                return true;
+            // View all messages from everyone
+            case R.id.action_messages:
+                this.updateMessageListenerDB("d", new ArrayList<>());
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -98,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Starts the authentication intent with Firebase Auth UI, and return with results.
+     * @param view Not used, but is a required signature for onClick event functions.
      */
     public void onClickLogin(final View view) {
         this.authentication.login();
@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Tries to log in an anonymous user using Firebase Auth.
+     * @param view Not used, but is a required signature for onClick event functions.
      */
     public void onClickLoginAnonymous(final View view) {
         this.authentication.loginAnonymously();
@@ -119,11 +120,13 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         this.updateUI(this.authentication.getUser());
 
-        try {
-            getSystemService(JobScheduler.class).cancel(Constants.BACKGROUND_FETCH_ID);
-        } catch (NullPointerException e) {
-            Log.w(Constants.LOG_TAG, e);
-        }
+        JobScheduler jobScheduler = getSystemService(JobScheduler.class);
+
+        // TODO: Should not happen
+        if (jobScheduler == null)
+            throw new NullPointerException();
+
+        jobScheduler.cancel(Constants.BACKGROUND_FETCH_ID);
     }
 
     /**
@@ -143,7 +146,13 @@ public class MainActivity extends AppCompatActivity {
         builder.setExtras(bundle);
         builder.setPeriodic(this.fetchDataFrequency * Constants.MINUTES_IN_HOUR * Constants.MS_IN_SECOND);
 
-        getSystemService(JobScheduler.class).schedule(builder.build());
+        JobScheduler jobScheduler = getSystemService(JobScheduler.class);
+
+        // TODO: Should not happen
+        if (jobScheduler == null)
+            throw new NullPointerException();
+
+        jobScheduler.schedule(builder.build());
     }
 
     /**
@@ -156,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Adds the user to the database.
      */
-    public void addUserToDB(final String user, final String uuid) {
+    private void addUserToDB(final String user, final String uuid) {
         this.database.addUser(user, uuid);
     }
 

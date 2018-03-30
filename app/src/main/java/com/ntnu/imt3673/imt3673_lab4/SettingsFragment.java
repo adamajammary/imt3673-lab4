@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.PreferenceFragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
@@ -26,7 +27,13 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ActionBar supportActionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+
+        // TODO: Should not happen
+        if (supportActionBar == null)
+            throw new NullPointerException();
+
+        supportActionBar.setDisplayHomeAsUpEnabled(true);
         addPreferencesFromResource(R.xml.settings);
     }
 
@@ -39,7 +46,6 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         if (key.equals(Constants.SETTINGS_NICK)) {
             ValueEventListener listener = new ValueEventListener() {
                 @Override
-                @SuppressWarnings("unchecked")
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Map                      dbValues    = (Map<String, Object>)dataSnapshot.getValue(Object.class);
                     SharedPreferences        prefs       = getPreferenceScreen().getSharedPreferences();
@@ -109,22 +115,45 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
      * Refreshes the UI components.
      */
     private void updateUI() {
-        // Disable the nick pref if the user has changed their nick
-        String nickChanged = getPreferenceScreen().getSharedPreferences().getString(
-            Constants.SETTINGS_NICK_CHANGED, Constants.FALSE
-        );
+        SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
+        String            nickChanged       = sharedPreferences.getString(Constants.SETTINGS_NICK_CHANGED, Constants.FALSE);
+        String            defaultNick       = sharedPreferences.getString(Constants.SETTINGS_NICK_DEFAULT, "");
+        String            newNick           = sharedPreferences.getString(Constants.SETTINGS_NICK, "");
 
-        if (nickChanged.equals(Constants.TRUE))
+        // Handle nick change
+        if (nickChanged.equals(Constants.TRUE)) {
+            // Disable the nick pref if the user has changed their nick
             findPreference(Constants.SETTINGS_NICK).setEnabled(false);
 
-        // Update the preference to show the selected value
-        ListPreference freqPref  = (ListPreference)findPreference(Constants.SETTINGS_FREQ);
-        CharSequence   freqValue = freqPref.getEntry();
+            // Update nick for existing messages in the database
+            ValueEventListener listener = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren())
+                        snapshot.getRef().child(Constants.DB_MESSAGES_U).setValue(newNick);
+                }
 
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.w(Constants.LOG_TAG, databaseError.toException());
+                }
+            };
+
+            Query dbQuery = FirebaseDatabase.getInstance().getReference()
+                .child(Constants.DB_MESSAGES)
+                .orderByChild(Constants.DB_MESSAGES_U)
+                .equalTo(defaultNick);
+
+            dbQuery.addListenerForSingleValueEvent(listener);
+            dbQuery.removeEventListener(listener);
+        }
+
+        // Update the preference to show the selected value
+        ListPreference     freqPref  = (ListPreference)findPreference(Constants.SETTINGS_FREQ);
+        CharSequence       freqValue = freqPref.getEntry();
         EditTextPreference nickPref  = (EditTextPreference)findPreference(Constants.SETTINGS_NICK);
-        String             nickValue = nickPref.getText();
 
         freqPref.setSummary(getString(R.string.settings_frequency_desc) + ": " + freqValue);
-        nickPref.setSummary(getString(R.string.settings_nick_desc)      + ": " + nickValue);
+        nickPref.setSummary(getString(R.string.settings_nick_desc) + ": " + newNick);
     }
 }

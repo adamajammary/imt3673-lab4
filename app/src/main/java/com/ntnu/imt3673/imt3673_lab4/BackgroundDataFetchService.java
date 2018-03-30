@@ -83,7 +83,12 @@ public class BackgroundDataFetchService extends JobService {
      */
     @SuppressWarnings("unchecked")
     private void notifyUser(DataSnapshot dataSnapshot) {
-        Map    dbValue  = (Map<String, String>)dataSnapshot.getValue(Object.class);
+        Map dbValue = (Map<String, String>)dataSnapshot.getValue(Object.class);
+
+        // TODO: Should not happen
+        if (dbValue == null)
+            throw new NullPointerException();
+
         Date   date     = new Date(Long.parseLong((String)dbValue.get(Constants.DB_MESSAGES_D)));
         String date2    = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.US).format(date);
         String msgShort = (date2 + "\t(" + dbValue.get(Constants.DB_MESSAGES_U) + ")");
@@ -106,6 +111,10 @@ public class BackgroundDataFetchService extends JobService {
 
         NotificationManager manager = getSystemService(NotificationManager.class);
 
+        // TODO: Should not happen
+        if (manager == null)
+            throw new NullPointerException();
+
         // Register a NotificationChannel on API 26+ (Android 8.0 and higher)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = getString(R.string.notification_channel_name);
@@ -119,7 +128,7 @@ public class BackgroundDataFetchService extends JobService {
         }
 
         // Assign the notification a new incremented ID
-        manager.notify(this.notificationID.incrementAndGet(), notification.build());
+        manager.notify(notificationID.incrementAndGet(), notification.build());
     }
 
 }

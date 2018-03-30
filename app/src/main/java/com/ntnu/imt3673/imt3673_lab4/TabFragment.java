@@ -3,11 +3,10 @@ package com.ntnu.imt3673.imt3673_lab4;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,8 +40,14 @@ public final class TabFragment extends Fragment {
      * Sets up the UI layout for the requested tab fragment.
      */
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        int tabIndex = getArguments().getInt(Constants.TAB_ARG_INDEX);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Bundle arguments = getArguments();
+
+        // TODO: Should not happen
+        if (arguments == null)
+            throw new NullPointerException();
+
+        int tabIndex = arguments.getInt(Constants.TAB_ARG_INDEX);
 
         switch (tabIndex) {
             case 0: return this.getTabMessages(inflater, container);
@@ -57,8 +62,13 @@ public final class TabFragment extends Fragment {
      */
     private View getTabFriends(LayoutInflater inflater, ViewGroup container) {
         MainActivity activity = ((MainActivity)getActivity());
-        View         view     = inflater.inflate(R.layout.fragment_friends, container, false);
-        ListView     list     = view.findViewById(R.id.lv_friends);
+
+        // TODO: Should not happen
+        if (activity == null)
+            throw new NullPointerException();
+
+        View     view = inflater.inflate(R.layout.fragment_friends, container, false);
+        ListView list = view.findViewById(R.id.lv_friends);
 
         // Set a custom adapter to handle the friends list
         FriendsAdapter friendsAdapter = new FriendsAdapter(this.getActivity(), R.layout.list_item_friend);
@@ -67,24 +77,25 @@ public final class TabFragment extends Fragment {
         // Update the users listener on the database
         activity.updateUserListenerDB(friendsAdapter);
 
-        // Clicking on a user will only show messages from that user and us
+        // Clicking on a user will only show messages from that user
         list.setOnItemClickListener(
             (AdapterView<?> parent, View v, int pos, long id) -> {
-                SharedPreferences prefs    = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                String            nickname = prefs.getString(Constants.SETTINGS_NICK, "");
-                String            user     = friendsAdapter.getItem(pos);
-                ArrayList<String> equalTo  = new ArrayList<>();
+                //SharedPreferences prefs    = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                //String            nickname = prefs.getString(Constants.SETTINGS_NICK, "");
+                String            friend  = friendsAdapter.getItem(pos);
+                ArrayList<String> equalTo = new ArrayList<>();
 
                 // Show only messages from the selected user and us
-                equalTo.add(user);
+                equalTo.add(friend);
 
-                if (!nickname.equals(user))
-                    equalTo.add(nickname);
+                // TODO: Can add more users to the equalTo array if we want messages from multiple users.
+                //if (!nickname.equals(user))
+                //    equalTo.add(nickname);
 
                 activity.updateMessageListenerDB(Constants.DB_MESSAGES_U, equalTo);
 
                 // Switch over to the messages tab
-                ViewPager viewPager = getActivity().findViewById(R.id.container);
+                ViewPager viewPager = activity.findViewById(R.id.container);
                 viewPager.setCurrentItem(0);
             }
         );
@@ -97,10 +108,15 @@ public final class TabFragment extends Fragment {
      */
     private View getTabMessages(LayoutInflater inflater, ViewGroup container) {
         MainActivity activity = ((MainActivity)getActivity());
-        View         view     = inflater.inflate(R.layout.fragment_messages, container, false);
-        Button       button   = view.findViewById(R.id.btn_message);
-        ListView     list     = view.findViewById(R.id.lv_messages);
-        EditText     message  = view.findViewById(R.id.et_message);
+
+        // TODO: Should not happen
+        if (activity == null)
+            throw new NullPointerException();
+
+        View     view    = inflater.inflate(R.layout.fragment_messages, container, false);
+        Button   button  = view.findViewById(R.id.btn_message);
+        ListView list    = view.findViewById(R.id.lv_messages);
+        EditText message = view.findViewById(R.id.et_message);
 
         // Set a custom adapter to handle the messages list
         MessagesAdapter messagesAdapter = new MessagesAdapter(getActivity(), R.layout.list_item_message);
@@ -141,14 +157,20 @@ public final class TabFragment extends Fragment {
      * Hides the software keyboard.
      */
     private void hideKeyboard() {
-        try {
-            InputMethodManager inputMethodManager = (InputMethodManager)this.getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
-            IBinder            windowToken        = this.getActivity().getCurrentFocus().getWindowToken();
+        Activity activity = getActivity();
 
-            inputMethodManager.hideSoftInputFromWindow(windowToken, 0);
-        } catch (NullPointerException e) {
-            Log.w(Constants.LOG_TAG, e);
-        }
+        // TODO: Should not happen
+        if (activity == null)
+            throw new NullPointerException();
+
+        InputMethodManager inputManager = (InputMethodManager)activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        View               view         = activity.getCurrentFocus();
+
+        // TODO: Should not happen
+        if ((inputManager == null) || (view == null))
+            throw new NullPointerException();
+
+        inputManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
 }

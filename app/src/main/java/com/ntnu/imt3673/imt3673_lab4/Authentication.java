@@ -20,11 +20,11 @@ import java.util.List;
 /**
  * Authentication - Handles all user authentication using Firebase Auth UI.
  */
-public class Authentication {
+class Authentication {
 
-    private MainActivity           activity;
-    private boolean                anonymous;
-    private List<AuthUI.IdpConfig> providers;
+    private final MainActivity           activity;
+    private boolean                      anonymous;
+    private final List<AuthUI.IdpConfig> providers;
 
     /**
      * Authentication
@@ -46,13 +46,16 @@ public class Authentication {
      */
     public void authenticate(final int requestCode, final int resultCode, final Intent data) {
         if (requestCode == Constants.LOGIN_INTENT) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-
             if (resultCode == Activity.RESULT_OK) {
                 this.activity.updateUI(this.getUser());
             } else {
                 Toast.makeText(this.activity, R.string.error_login, Toast.LENGTH_LONG).show();
-                Log.w("LAB4_AUTHENTICATION_FAILED", response.getError());
+
+                IdpResponse response = IdpResponse.fromResultIntent(data);
+
+                if (response != null)
+                    Log.w("LAB4_AUTHENTICATION_FAILED", response.getError());
+
                 this.activity.updateUI(null);
             }
         }
@@ -109,9 +112,7 @@ public class Authentication {
         } else {
             AuthUI.getInstance()
             .signOut(this.activity)
-            .addOnCompleteListener((@NonNull Task<Void> task) -> {
-                activity.updateUI(null);
-            });
+            .addOnCompleteListener((@NonNull Task<Void> task) -> activity.updateUI(null));
         }
     }
 

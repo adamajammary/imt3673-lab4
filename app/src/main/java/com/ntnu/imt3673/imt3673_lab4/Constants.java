@@ -3,7 +3,7 @@ package com.ntnu.imt3673.imt3673_lab4;
 /**
  * Global Constants
  */
-public final class Constants {
+final class Constants {
 
     public static final int    MINUTES_IN_HOUR       = 60;
     public static final int    MS_IN_SECOND          = 1000;

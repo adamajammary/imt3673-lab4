@@ -7,7 +7,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 /**
  * Tabs Adapter - A custom adapter that manages and returns a specified tab.
  */
-public class TabsAdapter extends FragmentStatePagerAdapter {
+class TabsAdapter extends FragmentStatePagerAdapter {
 
     /**
      * Tabs Adapter

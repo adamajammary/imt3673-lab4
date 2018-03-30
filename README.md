@@ -5,12 +5,15 @@ IMT3673 Lab 4 - Chat application (Android, Java)
 - The user can login anonymously or with an existing Google account
 - The nickname can be changed from the Settings menu (in the top-right corner) after logging in
 - The login process and fetching initial data may be slow when testing on an emulator
+- Clicking on a user will filter all messages sent from that user
+- The filter can be reset from the Settings menu (View all messages)
 
 ## Linter warnings
-- GradleDependency:			Latest version 12.0.0 of Google Play Services is not available on all emulators
-- UnusedResources:			Auto-generated file during build by Google Services
-- GoogleAppIndexingWarning: App will not be commercially released, so no need to be indexable by Google Search
-- UncheckedCast:			Firebase returns an Object from the DataSnaphots that I cast to a Map
+- Gradle dependency:		Latest version 12.0.0 of Google Play Services is not available on all emulators
+- Firebase App Indexing:	App will not be commercially released, so no need to be indexable by Google Search
+- Unchecked cast:			Firebase returns an Object from the DataSnaphots that I cast to a Map
+- Unused declaration:		View is not used, but is a required signature for onClick event functions
+- Unused resources:			Auto-generated file during the build process of Google Services
 
 ## The idea
 Users of the app can post text messages that are seen by everyone.

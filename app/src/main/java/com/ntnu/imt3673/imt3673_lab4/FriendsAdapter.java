@@ -2,6 +2,7 @@ package com.ntnu.imt3673.imt3673_lab4;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -10,10 +11,10 @@ import android.widget.TextView;
 /**
  * Friends Adapter
  */
-public class FriendsAdapter extends ArrayAdapter<String> {
+class FriendsAdapter extends ArrayAdapter<String> {
 
-    private Activity activity;
-    private int      listItemLayoutId;
+    private final Activity activity;
+    private final int      listItemLayoutId;
 
     /**
      * Friends Adapter
@@ -31,7 +32,8 @@ public class FriendsAdapter extends ArrayAdapter<String> {
      * Returns a view for the list row item.
      */
     @Override
-    public View getView(final int position, View convertView, final ViewGroup container) {
+    @NonNull
+    public View getView(final int position, View convertView, @NonNull final ViewGroup container) {
         if (convertView == null)
             convertView = this.activity.getLayoutInflater().inflate(this.listItemLayoutId, container, false);
 

@@ -14,8 +14,6 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,20 +23,20 @@ import java.util.Map;
 /**
  * Database - Handles all management of the online database using Firebase Realtime Database.
  */
-public class Database {
+class Database {
 
-    private MainActivity       activity;
-    private MessagesAdapter    messagesAdapter;
-    private ChildEventListener messagesEventListener;
-    private ChildEventListener usersEventListener;
-    private DatabaseReference  dbMessagesRef;
-    private DatabaseReference  dbUsersRef;
+    private final MainActivity                activity;
+    private MessagesAdapter                   messagesAdapter;
+    private final ArrayList<FirebaseListener> messagesEventListeners = new ArrayList<>();
+    private FirebaseListener                  usersEventListener;
+    private DatabaseReference                 dbMessagesRef;
+    private DatabaseReference                 dbUsersRef;
 
     /**
      * Database - Sets up a reference to the Firebase database.
      * @param context Current activity context
      */
-    public Database(Context context) {
+    public Database(final Context context) {
         this.activity = (MainActivity)context;
 
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
@@ -91,6 +89,32 @@ public class Database {
     }
 
     /**
+     * Adds and registers a single message listener using the specified criteria.
+     * @param orderBy The key (equivelant to column in database table), for example column 'u' in table 'messages'.
+     * @param equalTo The value (equivelant to restricting rows by column value), for example value 'test_user' in column 'u'.
+     */
+    private void addMessageListener(final String orderBy, final String equalTo) {
+        FirebaseListener listener = new FirebaseListener(this.messagesAdapter);
+        this.messagesEventListeners.add(listener);
+
+        if (!TextUtils.isEmpty(equalTo))
+            this.dbMessagesRef.orderByChild(orderBy).equalTo(equalTo).addChildEventListener(listener);
+        else
+            this.dbMessagesRef.orderByChild(orderBy).addChildEventListener(listener);
+    }
+
+    /**
+     * Removes all message listeners and clears all collections referring to them.
+     */
+    private void removeMessageListeners() {
+        for (FirebaseListener listener : this.messagesEventListeners)
+            this.dbMessagesRef.removeEventListener(listener);
+
+        this.messagesEventListeners.clear();
+        this.messagesAdapter.clear();
+    }
+
+    /**
      * Updates the user with the new nickname in the database.
      */
     public void updateUser(final String user, final String uuid) {
@@ -101,40 +125,34 @@ public class Database {
     }
 
     /**
-     * Updates the message listener with the specified query/search criteria.
+     * Updates the message listener(s) with the specified criteria.
+     * @param orderBy The key (equivelant to column in database table), for example column 'u' in table 'messages'.
+     * @param equalTo The value (equivelant to restricting rows by column value), for example value 'test_user' in column 'u'.
      */
-    public void updateMessageListener(String orderBy, ArrayList<String> equalTo) {
-        if (this.messagesEventListener != null)
-            this.dbMessagesRef.removeEventListener(this.messagesEventListener);
-
-        this.messagesAdapter.clear();
+    public void updateMessageListener(final String orderBy, final ArrayList<String> equalTo) {
+        this.removeMessageListeners();
 
         if (!equalTo.isEmpty()) {
-            for (String val : equalTo)
-                this.dbMessagesRef.orderByChild(orderBy).equalTo(val).addChildEventListener(this.messagesEventListener);
+            for (String value : equalTo)
+                this.addMessageListener(orderBy, value);
         } else {
-            this.dbMessagesRef.orderByChild(orderBy).addChildEventListener(this.messagesEventListener);
+            this.addMessageListener(orderBy, "");
         }
     }
 
     /**
      * Register a listener to notify us when a new message has been added to the Firebase server.
      */
-    public void updateMessageListener(MessagesAdapter messagesAdapter) {
-        if (this.messagesEventListener != null)
-            this.dbMessagesRef.removeEventListener(this.messagesEventListener);
-
+    public void updateMessageListener(final MessagesAdapter messagesAdapter) {
         this.messagesAdapter = messagesAdapter;
-        this.messagesAdapter.clear();
-
-        this.messagesEventListener = new FirebaseListener(this.messagesAdapter);
-        this.dbMessagesRef.orderByChild(Constants.DB_MESSAGES_D).addChildEventListener(this.messagesEventListener);
+        this.removeMessageListeners();
+        this.addMessageListener(Constants.DB_MESSAGES_D, "");
     }
 
     /**
      * Register a listener to notify us when a new user has been added to the Firebase server.
      */
-    public void updateUserListener(FriendsAdapter friendsAdapter) {
+    public void updateUserListener(final FriendsAdapter friendsAdapter) {
         if (this.usersEventListener != null)
             this.dbUsersRef.removeEventListener(this.usersEventListener);
 
@@ -149,22 +167,26 @@ public class Database {
      */
     private class FirebaseListener implements ChildEventListener {
 
-        ArrayAdapter<String> adapter;
+        private final ArrayAdapter<String> adapter;
 
-        public FirebaseListener(ArrayAdapter<String> adapter) {
+        FirebaseListener(final ArrayAdapter<String> adapter) {
             this.adapter = adapter;
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
+        public void onChildAdded(final DataSnapshot dataSnapshot, final String previousChildName) {
             String listEntry = "";
             Map    dbValue   = (Map<String, String>)dataSnapshot.getValue(Object.class);
             String dbName    = dataSnapshot.getRef().getParent().getKey();
 
+            // Should never happen
+            if (dbValue == null)
+                throw new NullPointerException();
+
             // Messages (chat)
             if (dbName.equals(Constants.DB_MESSAGES)) {
-                Date   date  = new Date(Long.parseLong((String)dbValue.get(Constants.DB_MESSAGES_D)));
+                Date date = new Date(Long.parseLong((String) dbValue.get(Constants.DB_MESSAGES_D)));
                 String date2 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.US).format(date);
 
                 listEntry = (date2 + "\t(" + dbValue.get(Constants.DB_MESSAGES_U) + ")\n" + dbValue.get(Constants.DB_MESSAGES_M));
@@ -186,20 +208,20 @@ public class Database {
             }
         }
 
-        @Override public void onChildChanged(DataSnapshot dataSnapshot, String p) {
+        @Override public void onChildChanged(final DataSnapshot dataSnapshot, final String p) {
             this.updateListener();
         }
 
-        @Override public void onChildMoved(DataSnapshot   dataSnapshot, String p) {
+        @Override public void onChildMoved(final DataSnapshot   dataSnapshot, final String p) {
             this.updateListener();
         }
 
-        @Override public void onChildRemoved(DataSnapshot dataSnapshot) {
+        @Override public void onChildRemoved(final DataSnapshot dataSnapshot) {
             this.updateListener();
         }
 
         @Override
-        public void onCancelled(DatabaseError error) {
+        public void onCancelled(final DatabaseError error) {
             Log.w(Constants.LOG_TAG, error.toException());
         }
 
